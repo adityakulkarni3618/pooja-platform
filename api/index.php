@@ -1,3 +1,9 @@
+<?php if (!$db_connected): ?>
+    <div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
+        <strong>⚠️ Development Mode:</strong> The live preview database is offline. 
+        Please view the full version on <strong>Localhost (Laragon)</strong> for booking features.
+    </div>
+<?php endif; ?>
 <?php 
 include 'lang_config.php'; // This must be first to handle the language session
 include 'db_connect.php'; 

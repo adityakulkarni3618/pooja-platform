@@ -1,18 +1,26 @@
 <?php
-// Database credentials for Laragon
-$host = "localhost";      // The server is running on your local machine
-$username = "root";       // Default Laragon username
-$password = "";           // Default Laragon password is blank
-$database = "pooja_platform"; // The database we just created in HeidiSQL
+// Database Configuration
+$host = "localhost";
+$user = "root";
+$pass = "";
+$dbname = "pooja_platform";
 
-// 1. Establish the connection
-$conn = new mysqli($host, $username, $password, $database);
+// Global flag to check database status
+$db_connected = false;
 
-// 2. Check if the connection worked
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+try {
+    // Attempt connection
+    $conn = new mysqli($host, $user, $pass, $dbname);
+    
+    if ($conn->connect_error) {
+        $db_connected = false;
+    } else {
+        $db_connected = true;
+        // Set charset for Marathi support
+        $conn->set_charset("utf8mb4");
+    }
+} catch (Exception $e) {
+    // Silence the error for the live site
+    $db_connected = false;
 }
-
-// 3. Success message (we will delete this later once we know it works)
-
 ?>
