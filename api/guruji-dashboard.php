@@ -1,13 +1,19 @@
 <?php 
-// 1. Load Configuration
+// STEP 1: This MUST be the very first line. No spaces before <?php
+session_start(); 
+
+// STEP 2: Security Gate - Check if the session was created in login.php
+if (!isset($_SESSION['guruji_id'])) {
+    // If no session exists, redirect back to login
+    header("Location: /login.php"); 
+    exit();
+}
+
+// STEP 3: Now load your other files
 include 'lang_config.php'; 
 include 'db_connect.php'; 
 
-// 2. Security Gate - Only allow logged-in Guruji
-if (!isset($_SESSION['guruji_id'])) {
-    header("Location: login.php");
-    exit();
-}
+// ... rest of your code ...
 
 // 3. Fallback for Translations (In case lang_config.php keys are missing)
 if(!isset($t['dashboard'])) {
