@@ -1,21 +1,27 @@
 <?php 
-include 'lang_config.php'; // This must be first to handle the language session
-include 'db_connect.php'; 
-?>
-<?php 
+// 1. Initial configuration
+session_start();
+error_reporting(0);
+ini_set('display_errors', 0);
+
+include 'lang_config.php'; 
 include 'db_connect.php'; 
 
-// 1. Get the Pooja ID. 999 is our "Custom" flag.
+// 2. Get the Pooja ID safely
 $pooja_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $is_custom = ($pooja_id == 999);
 
-// 2. Fetch Pooja details (unless it's a custom request)
+// 3. Fetch Pooja details
 if (!$is_custom) {
+    // Sanitize the ID for the query
+    $pooja_id = $conn->real_escape_string($pooja_id);
     $sql = "SELECT * FROM poojas WHERE pooja_id = $pooja_id";
     $result = $conn->query($sql);
+    
     if ($result && $result->num_rows > 0) {
         $pooja = $result->fetch_assoc();
     } else {
+        // If pooja not found, go back home
         header("Location: index.php");
         exit();
     }
@@ -37,7 +43,7 @@ if (!$is_custom) {
     <title><?php echo $pooja['title']; ?> - Details</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background-color: #fdfdfd;">
     <nav class="navbar">
         <div class="logo">Pooja Seva</div>
         <ul class="nav-links">
@@ -45,7 +51,7 @@ if (!$is_custom) {
         </ul>
     </nav>
 
-    <div class="content-section">
+    <div class="content-section" style="max-width: 900px; margin: auto; padding: 20px;">
         <h1 style="color: #ff4500;"><?php echo $pooja['title']; ?></h1>
         <p class="hero-desc" style="font-size: 1.1rem; color: #555; margin-bottom: 30px; line-height: 1.6;">
             <?php echo $pooja['significance_description']; ?>
@@ -67,7 +73,7 @@ if (!$is_custom) {
                                 echo "<li><strong>" . $item['item_name'] . "</strong> <small>(" . $item['quantity'] . ")</small></li>";
                             }
                         } else {
-                            echo "<li>Rice, Flowers, Fruit, and Milk (Standard items).</li>";
+                            echo "<li>Standard items: Rice, Flowers, Fruit, and Milk.</li>";
                         }
                         ?>
                     </ul>
@@ -84,7 +90,7 @@ if (!$is_custom) {
                                 echo "<li>" . $item['item_name'] . "</li>";
                             }
                         } else {
-                            echo "<li>Idols, Copper Kalash, and Ritual Tools.</li>";
+                            echo "<li>Ritual tools: Idols, Copper Kalash, and Pothi.</li>";
                         }
                         ?>
                     </ul>
@@ -93,8 +99,8 @@ if (!$is_custom) {
         </div>
         <?php endif; ?>
 
-        <div class="booking-form-box" style="margin-top: 40px; background: #fffaf0; padding: 35px; border-radius: 12px; border: 1px solid #ffd700;">
-            <h2 style="text-align: center; margin-bottom: 25px;">📅 Booking Details</h2>
+        <div class="booking-form-box" style="margin-top: 40px; background: #fffaf0; padding: 35px; border-radius: 12px; border: 1px solid #ffd700; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+            <h2 style="text-align: center; margin-bottom: 25px; color: #333;">📅 Booking Details</h2>
             
             <form action="process-booking.php" method="POST">
                 <input type="hidden" name="pooja_id" value="<?php echo $pooja_id; ?>">
@@ -102,35 +108,35 @@ if (!$is_custom) {
                 <?php if ($is_custom): ?>
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label style="font-weight: bold; color: #ff4500;">Name of the Pooja/Vidhi you want:</label>
-                    <input type="text" name="custom_pooja_name" placeholder="e.g. Navchandi Path, Special Shanti Vidhi..." required style="width: 100%; padding: 12px; border: 2px solid #ff4500; border-radius: 5px;">
+                    <input type="text" name="custom_pooja_name" placeholder="e.g. Navchandi Path, Special Shanti Vidhi..." required style="width: 100%; padding: 12px; border: 2px solid #ff4500; border-radius: 5px; box-sizing: border-box;">
                 </div>
                 <?php endif; ?>
 
-                <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                     <div class="form-group">
-                        <label>Your Full Name</label>
-                        <input type="text" name="full_name" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                        <label style="display:block; margin-bottom:5px;">Your Full Name</label>
+                        <input type="text" name="full_name" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">
                     </div>
 
                     <div class="form-group">
-                        <label>Phone Number (WhatsApp)</label>
-                        <input type="tel" name="phone" required placeholder="Ex: 9876543210" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                        <label style="display:block; margin-bottom:5px;">Phone Number (WhatsApp)</label>
+                        <input type="tel" name="phone" required placeholder="Ex: 9876543210" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">
                     </div>
 
                     <div class="form-group">
-                        <label>Select Date</label>
-                        <input type="date" name="booking_date" min="<?php echo date('Y-m-d'); ?>" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                        <label style="display:block; margin-bottom:5px;">Select Date</label>
+                        <input type="date" name="booking_date" min="<?php echo date('Y-m-d'); ?>" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">
                     </div>
 
                     <div class="form-group">
-                        <label>Preferred Time</label>
-                        <input type="time" name="time_slot" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                        <label style="display:block; margin-bottom:5px;">Preferred Time</label>
+                        <input type="time" name="time_slot" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top: 20px;">
-                    <label>Exact Address & Landmark</label>
-                    <textarea name="address" rows="3" required placeholder="Flat No, Society Name, Near..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+                    <label style="display:block; margin-bottom:5px;">Exact Address & Landmark</label>
+                    <textarea name="address" rows="3" required placeholder="Flat No, Society Name, Near..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;"></textarea>
                 </div>
 
                 <div style="text-align: center; margin-top: 30px;">

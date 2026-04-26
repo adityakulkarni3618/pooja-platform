@@ -1,5 +1,5 @@
 <?php 
-// 1. Load Configuration (Starts session and defines $t and $lang)
+// 1. Load Configuration
 include 'lang_config.php'; 
 include 'db_connect.php'; 
 
@@ -9,16 +9,29 @@ if (!isset($_SESSION['guruji_id'])) {
     exit();
 }
 
-// 3. Analytics Calculation (For the dashboard cards)
+// 3. Fallback for Translations (In case lang_config.php keys are missing)
+if(!isset($t['dashboard'])) {
+    $t['dashboard'] = "Guruji Dashboard";
+    $t['home'] = "Home";
+    $t['logout'] = "Logout";
+    $t['address'] = "Address";
+    $t['status'] = "Status";
+    $t['action'] = "Action";
+    $t['lang_toggle'] = ($lang == 'en' ? 'मराठीत पहा' : 'Switch to English');
+}
+
+// 4. Analytics Calculation
 $today = date('Y-m-d');
 $stats_query = "SELECT 
     COUNT(*) as total, 
     SUM(CASE WHEN booking_date = '$today' THEN 1 ELSE 0 END) as today_count,
     SUM(CASE WHEN status = 'pending_review' OR pooja_id = 999 THEN 1 ELSE 0 END) as custom_requests
     FROM bookings WHERE status != 'cancelled'";
-$stats = $conn->query($stats_query)->fetch_assoc();
 
-// 4. Data Fetching (Including the new title_mr column for bilingual display)
+$stats_result = $conn->query($stats_query);
+$stats = ($stats_result) ? $stats_result->fetch_assoc() : ['total'=>0, 'today_count'=>0, 'custom_requests'=>0];
+
+// 5. Data Fetching (Bilingual Support)
 $sql = "SELECT b.booking_id, b.pooja_id, u.full_name, u.phone_number, p.title, p.title_mr, b.booking_date, b.time_slot, b.exact_address, b.status 
         FROM bookings b
         JOIN users u ON b.devotee_id = u.user_id
@@ -50,12 +63,18 @@ $result = $conn->query($sql);
         }
         .custom-row { background-color: #fff9f0 !important; border-left: 5px solid #ff8c00; }
         .badge-pending { background: #ff8c00; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
-        .dashboard-table th { background-color: #f8f9fa; color: #333; }
+        .dashboard-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        .dashboard-table th { background-color: #f8f9fa; color: #333; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
+        .dashboard-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .status-confirmed { color: green; font-weight: bold; }
+        .status-pending { color: orange; font-weight: bold; }
+        .status-cancelled { color: red; font-weight: bold; }
     </style>
 </head>
-<body>
+<body style="background-color: #fdfdfd;">
+
     <nav class="navbar">
-        <div class="logo">Pooja Seva</div>
+        <div class="logo">Pooja Seva Admin</div>
         <ul class="nav-links">
             <li><a href="index.php"><?php echo $t['home']; ?></a></li>
             <li><a href="logout.php" style="color: #ff4500; font-weight: bold;"><?php echo $t['logout']; ?></a></li>
@@ -65,18 +84,18 @@ $result = $conn->query($sql);
         </ul>
     </nav>
 
-    <div class="content-section">
+    <div class="content-section" style="padding: 20px; max-width: 1200px; margin: auto;">
         
         <div class="admin-menu">
             <h3 style="margin-top: 0; color: #333;">🛠️ Management Console</h3>
             <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                <a href="admin-add-pooja.php" class="btn-small" style="background: #ff4500; text-decoration: none;">➕ Add New Pooja</a>
-                <a href="admin-add-samagri.php" class="btn-small" style="background: #666; text-decoration: none;">🛒 Add Samagri Item</a>
-                <a href="admin-add-library.php" class="btn-small" style="background: #ff8c00; text-decoration: none;">📖 Add Library Text</a>
+                <a href="admin-add-pooja.php" class="btn-small" style="background: #ff4500; text-decoration: none; padding: 10px 15px; color: white; border-radius: 5px;">➕ Add New Pooja</a>
+                <a href="admin-add-samagri.php" class="btn-small" style="background: #666; text-decoration: none; padding: 10px 15px; color: white; border-radius: 5px;">🛒 Add Samagri Item</a>
+                <a href="admin-add-library.php" class="btn-small" style="background: #ff8c00; text-decoration: none; padding: 10px 15px; color: white; border-radius: 5px;">📖 Add Library Text</a>
             </div>
         </div>
 
-        <h1><?php echo $t['dashboard']; ?></h1>
+        <h1 style="color: #333;"><?php echo $t['dashboard']; ?></h1>
         
         <div class="stats-container">
             <div class="stat-card">
@@ -96,7 +115,7 @@ $result = $conn->query($sql);
             </div>
         </div>
 
-        <h2>Upcoming Assignments</h2>
+        <h2 style="color: #ff4500; border-bottom: 2px solid #eee; padding-bottom: 10px;">Upcoming Assignments</h2>
         <table class="dashboard-table">
             <thead>
                 <tr>
@@ -113,9 +132,8 @@ $result = $conn->query($sql);
                 <?php
                 if ($result && $result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
-                        // Logic for Custom/New Requests
                         $is_custom = ($row['pooja_id'] == 999 || $row['status'] == 'pending_review');
-                        $row_style = $is_custom ? "class='custom-row'" : "";
+                        $row_class = $is_custom ? "custom-row" : "";
                         
                         // Bilingual Pooja Title Logic
                         $display_title = ($lang == 'mr' && !empty($row['title_mr'])) ? $row['title_mr'] : $row['title'];
@@ -126,7 +144,7 @@ $result = $conn->query($sql);
                         $maps_link = "https://www.google.com/maps/search/?api=1&query=" . urlencode($row['exact_address']);
                         $phone_link = "tel:" . $row['phone_number'];
 
-                        echo "<tr $row_style>";
+                        echo "<tr class='$row_class'>";
                         echo "<td><strong>" . date('d M', strtotime($row['booking_date'])) . "</strong><br><small>" . $row['time_slot'] . "</small></td>";
                         
                         echo "<td>";
@@ -140,21 +158,21 @@ $result = $conn->query($sql);
                         echo "<td><span class='status-" . $row['status'] . "'>" . strtoupper($row['status']) . "</span></td>";
                         
                         echo "<td>
-                                <a href='update-status.php?id=" . $row['booking_id'] . "&status=confirmed' class='btn-small' style='background-color:green; display:block; text-align:center; margin-bottom:5px;'>Accept</a>
-                                <a href='update-status.php?id=" . $row['booking_id'] . "&status=cancelled' class='btn-small' style='background-color:red; display:block; text-align:center;'>Reject</a>
+                                <a href='update-status.php?id=" . $row['booking_id'] . "&status=confirmed' class='btn-small' style='background-color:green; display:block; text-align:center; color:white; text-decoration:none; padding:5px; border-radius:3px; margin-bottom:5px; font-size:0.8rem;'>Accept</a>
+                                <a href='update-status.php?id=" . $row['booking_id'] . "&status=cancelled' class='btn-small' style='background-color:red; display:block; text-align:center; color:white; text-decoration:none; padding:5px; border-radius:3px; font-size:0.8rem;'>Reject</a>
                               </td>";
                         
                         echo "<td>
-                                <a href='$wa_link' target='_blank' class='btn-wa' style='margin-bottom:5px; display:block; text-align:center;'>WhatsApp</a>
+                                <a href='$wa_link' target='_blank' style='background:#25D366; color:white; text-decoration:none; padding:5px; display:block; text-align:center; border-radius:3px; margin-bottom:5px; font-size:0.8rem;'>WhatsApp</a>
                                 <div style='display:flex; gap:5px;'>
-                                    <a href='$phone_link' class='btn-action' style='background-color:#007bff; flex:1; text-align:center; color:white; text-decoration:none;'>📞</a>
-                                    <a href='$maps_link' target='_blank' class='btn-action' style='background-color:#6f42c1; flex:1; text-align:center; color:white; text-decoration:none;'>📍</a>
+                                    <a href='$phone_link' style='background-color:#007bff; flex:1; text-align:center; color:white; text-decoration:none; border-radius:3px; padding:5px;'>📞</a>
+                                    <a href='$maps_link' target='_blank' style='background-color:#6f42c1; flex:1; text-align:center; color:white; text-decoration:none; border-radius:3px; padding:5px;'>📍</a>
                                 </div>
                               </td>";
                         echo "</tr>";
                     }
                 } else {
-                    echo "<tr><td colspan='7' style='text-align:center;'>No bookings found.</td></tr>";
+                    echo "<tr><td colspan='7' style='text-align:center; padding: 20px; color: #999;'>No bookings found.</td></tr>";
                 }
                 ?>
             </tbody>
