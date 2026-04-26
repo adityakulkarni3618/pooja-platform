@@ -1,13 +1,14 @@
 <?php
 session_start();
-// TURN THESE ON for the next 5 minutes to find the error
+// Keep these ON to see any database errors
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'db_connect.php';
 
+$error = ""; // Initialize error variable
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Check if the connection exists
     if (!$conn) { die("Database connection failed."); }
 
     $phone = $conn->real_escape_string($_POST['phone']); 
@@ -17,9 +18,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $conn->query($sql);
 
     if (!$result) {
-        // This will tell you if the 'password_hash' column is missing!
         die("Query Error: " . $conn->error);
     }
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        // Check password against DB or hardcoded demo password
+        if ($password == $user['password_hash'] || $password == "guruji123") { 
+            $_SESSION['guruji_id'] = $user['user_id'];
+            $_SESSION['guruji_name'] = $user['full_name'];
+            header("Location: guruji-dashboard.php");
+            exit();
+        } else {
+            $error = "Invalid Password!";
+        }
+    } else {
+        $error = "Access Denied: Not a registered Guruji.";
+    }
+} // <--- THIS WAS MISSING AND CAUSED THE WHITE SCREEN
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -30,35 +47,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="style.css">
     <style>
         .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 90vh;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 90vh; padding: 20px;
         }
         .login-card {
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            text-align: center;
+            width: 100%; max-width: 400px; padding: 40px;
+            background: #ffffff; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center;
         }
-        /* Ensure labels are aligned left even if card is centered */
-        .form-group {
-            text-align: left;
-            margin-bottom: 15px;
-        }
+        .form-group { text-align: left; margin-bottom: 15px; }
         .error-msg {
-            background: #fff5f5;
-            color: #c0392b;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            border-left: 4px solid #c0392b;
-            text-align: left;
+            background: #fff5f5; color: #c0392b; padding: 10px;
+            border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;
+            border-left: 4px solid #c0392b; text-align: left;
         }
     </style>
 </head>
@@ -77,20 +78,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h2 style="color: #ff8c00; margin-bottom: 5px;">Guruji Portal</h2>
             <p style="color: #666; font-size: 0.9rem; margin-bottom: 30px;">Access your sacred assignments</p>
             
-            <?php if(isset($error)): ?>
+            <?php if(!empty($error)): ?>
                 <div class="error-msg"><?php echo $error; ?></div>
             <?php endif; ?>
             
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label style="font-weight:600; display:block; margin-bottom:5px;">Phone Number</label>
-                    <input type="text" name="phone" placeholder="e.g. 1234567890" required style="width:100%; box-sizing:border-box;">
+                    <input type="text" name="phone" placeholder="e.g. 1234567890" required style="width:100%; padding:10px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px;">
                 </div>
                 <div class="form-group">
                     <label style="font-weight:600; display:block; margin-bottom:5px;">Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required style="width:100%; box-sizing:border-box;">
+                    <input type="password" name="password" placeholder="••••••••" required style="width:100%; padding:10px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px;">
                 </div>
-                <button type="submit" class="btn" style="width: 100%; margin-top: 10px; font-family:inherit;">
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding:12px; border-radius:30px; background:#ff8c00; color:white; border:none; cursor:pointer; font-weight:bold;">
                     Enter Dashboard
                 </button>
             </form>
