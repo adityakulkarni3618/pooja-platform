@@ -1,33 +1,23 @@
+<?php 
+// 1. These MUST be inside the PHP tag and on line 1
 error_reporting(0);
 ini_set('display_errors', 0);
-<?php if (!$db_connected): ?>
-    <div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
-        <strong>⚠️ Development Mode:</strong> The live preview database is offline. 
-        Please view the full version on <strong>Localhost (Laragon)</strong> for booking features.
-    </div>
-<?php endif; ?>
-<?php 
-include 'lang_config.php'; // This must be first to handle the language session
-include 'db_connect.php'; 
-?>
-<?php 
-include 'db_connect.php'; 
 
+// 2. Database and Language config MUST come before any HTML or text
+include 'db_connect.php'; 
+include 'lang_config.php'; 
 
 // --- LANGUAGE LOGIC ---
-// Set default language
 if (!isset($_SESSION['lang'])) {
     $_SESSION['lang'] = 'en';
 }
 
-// Check for language toggle request
 if (isset($_GET['lang'])) {
     $_SESSION['lang'] = $_GET['lang'] == 'mr' ? 'mr' : 'en';
 }
 
 $lang = $_SESSION['lang'];
 
-// Translation Array for UI Elements
 $texts = [
     'en' => [
         'home' => 'Home',
@@ -79,6 +69,13 @@ $texts = [
 
 $t = $texts[$lang];
 ?>
+
+<?php if (!$db_connected): ?>
+    <div style="background: #fff3cd; color: #856404; padding: 15px; text-align: center; border-bottom: 2px solid #ffeeba;">
+        <strong>⚠️ Development Mode:</strong> The live preview database is offline. 
+        Please view the full version on <strong>Localhost (Laragon)</strong> for booking features.
+    </div>
+<?php endif; ?>
 
 <!DOCTYPE html>
 <html lang="en">
