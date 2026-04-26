@@ -10,15 +10,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $conn->real_escape_string($_POST['phone']); 
     $password = $_POST['password'];
 
-    // Check if user exists and is a Guruji
+    // 1. Fetch the user. We only filter by phone and role first.
     $sql = "SELECT * FROM users WHERE phone_number = '$phone' AND role = 'guruji'";
     $result = $conn->query($sql);
 
     if ($result && $result->num_rows > 0) {
         $user = $result->fetch_assoc();
         
-        // Simple password check for your project
-        if ($password == "guruji123") { 
+        // 2. Check the password against the DB column OR the hardcoded demo password
+        // We use $user['password_hash'] because your DB error showed that column name
+        if ($password == $user['password_hash'] || $password == "guruji123") { 
             $_SESSION['guruji_id'] = $user['user_id'];
             $_SESSION['guruji_name'] = $user['full_name'];
             
@@ -28,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "Invalid Password!";
         }
     } else {
+        // If the query returns 0 rows, the phone or role is wrong
         $error = "Access Denied: Not a registered Guruji.";
     }
 }
@@ -41,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Guruji Login | Pooja Seva</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Specific tweaks for the Login Layout */
         .login-container {
             display: flex;
             justify-content: center;
