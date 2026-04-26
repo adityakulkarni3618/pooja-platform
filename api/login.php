@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Silence warnings to keep the UI clean on Vercel
 error_reporting(0);
 ini_set('display_errors', 0);
 
@@ -10,15 +9,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $conn->real_escape_string($_POST['phone']); 
     $password = $_POST['password'];
 
-    // 1. Fetch the user. We only filter by phone and role first.
     $sql = "SELECT * FROM users WHERE phone_number = '$phone' AND role = 'guruji'";
     $result = $conn->query($sql);
 
     if ($result && $result->num_rows > 0) {
         $user = $result->fetch_assoc();
         
-        // 2. Check the password against the DB column OR the hardcoded demo password
-        // We use $user['password_hash'] because your DB error showed that column name
+        // This check covers both your DB column and your demo password
         if ($password == $user['password_hash'] || $password == "guruji123") { 
             $_SESSION['guruji_id'] = $user['user_id'];
             $_SESSION['guruji_name'] = $user['full_name'];
@@ -29,7 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "Invalid Password!";
         }
     } else {
-        // If the query returns 0 rows, the phone or role is wrong
         $error = "Access Denied: Not a registered Guruji.";
     }
 }
@@ -59,6 +55,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             text-align: center;
         }
+        /* Ensure labels are aligned left even if card is centered */
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
         .error-msg {
             background: #fff5f5;
             color: #c0392b;
@@ -67,6 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 20px;
             font-size: 0.9rem;
             border-left: 4px solid #c0392b;
+            text-align: left;
         }
     </style>
 </head>
@@ -75,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <nav class="navbar">
         <div class="logo">🕉️ Pooja Seva</div>
         <ul class="nav-links">
-            <li><a href="index.php">Home</a></li>
+            <li><a href="/">Home</a></li>
         </ul>
     </nav>
 
@@ -91,20 +93,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <form method="POST">
                 <div class="form-group">
-                    <label>Phone Number</label>
-                    <input type="text" name="phone" placeholder="Registered mobile no." required>
+                    <label style="font-weight:600; display:block; margin-bottom:5px;">Phone Number</label>
+                    <input type="text" name="phone" placeholder="e.g. 1234567890" required style="width:100%; box-sizing:border-box;">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required>
+                    <label style="font-weight:600; display:block; margin-bottom:5px;">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required style="width:100%; box-sizing:border-box;">
                 </div>
-                <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px; font-family:inherit;">
                     Enter Dashboard
                 </button>
             </form>
             
             <div style="margin-top: 25px;">
-                <a href="index.php" style="color: #999; text-decoration: none; font-size: 0.85rem;">
+                <a href="/" style="color: #999; text-decoration: none; font-size: 0.85rem;">
                     ← Back to Home
                 </a>
             </div>
