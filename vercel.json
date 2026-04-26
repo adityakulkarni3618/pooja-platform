@@ -4,14 +4,18 @@
       "runtime": "vercel-php@0.7.1"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/style.css",
-      "dest": "/api/style.css"
+      "source": "/style.css",
+      "destination": "/api/style.css"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/$1"
+      "source": "/(login.php|guruji-dashboard.php|process-booking.php)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/",
+      "destination": "/api/index.php"
     }
   ]
 }
