@@ -1,35 +1,25 @@
 <?php
 session_start();
-error_reporting(0);
-ini_set('display_errors', 0);
+// TURN THESE ON for the next 5 minutes to find the error
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Check if the connection exists
+    if (!$conn) { die("Database connection failed."); }
+
     $phone = $conn->real_escape_string($_POST['phone']); 
     $password = $_POST['password'];
 
     $sql = "SELECT * FROM users WHERE phone_number = '$phone' AND role = 'guruji'";
     $result = $conn->query($sql);
 
-    if ($result && $result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-        
-        // This check covers both your DB column and your demo password
-        if ($password == $user['password_hash'] || $password == "guruji123") { 
-            $_SESSION['guruji_id'] = $user['user_id'];
-            $_SESSION['guruji_name'] = $user['full_name'];
-            
-            header("Location: guruji-dashboard.php");
-            exit();
-        } else {
-            $error = "Invalid Password!";
-        }
-    } else {
-        $error = "Access Denied: Not a registered Guruji.";
+    if (!$result) {
+        // This will tell you if the 'password_hash' column is missing!
+        die("Query Error: " . $conn->error);
     }
-}
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -91,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="error-msg"><?php echo $error; ?></div>
             <?php endif; ?>
             
-            <form method="POST">
+            <form action="login.php" method="POST">
                 <div class="form-group">
                     <label style="font-weight:600; display:block; margin-bottom:5px;">Phone Number</label>
                     <input type="text" name="phone" placeholder="e.g. 1234567890" required style="width:100%; box-sizing:border-box;">
