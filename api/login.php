@@ -1,12 +1,12 @@
 <?php
 session_start();
-// Keep these ON to see any database errors
+// Keep these ON for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'db_connect.php';
 
-$error = ""; // Initialize error variable
+$error = ""; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!$conn) { die("Database connection failed."); }
@@ -23,11 +23,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        // Check password against DB or hardcoded demo password
+        
+        // Check password
         if ($password == $user['password_hash'] || $password == "guruji123") { 
             $_SESSION['guruji_id'] = $user['user_id'];
             $_SESSION['guruji_name'] = $user['full_name'];
+            
+            // --- UPDATED REDIRECT LOGIC ---
+            // 1. Standard Header
             header("Location: guruji-dashboard.php");
+            
+            // 2. JavaScript Fallback (Best for Vercel/Cloud)
+            echo "<script>
+                alert('Login Successful! Welcome " . $user['full_name'] . "');
+                window.location.href='guruji-dashboard.php';
+            </script>";
+            
+            // 3. Meta Fallback
+            echo '<meta http-equiv="refresh" content="0;url=guruji-dashboard.php">';
             exit();
         } else {
             $error = "Invalid Password!";
@@ -35,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $error = "Access Denied: Not a registered Guruji.";
     }
-} // <--- THIS WAS MISSING AND CAUSED THE WHITE SCREEN
+} 
 ?>
 
 <!DOCTYPE html>
@@ -61,6 +74,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;
             border-left: 4px solid #c0392b; text-align: left;
         }
+        .input-field {
+            width:100%; padding:12px; box-sizing:border-box; 
+            border:1px solid #ddd; border-radius:8px; outline:none;
+        }
+        .input-field:focus { border-color: #ff8c00; }
     </style>
 </head>
 <body>
@@ -85,13 +103,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label style="font-weight:600; display:block; margin-bottom:5px;">Phone Number</label>
-                    <input type="text" name="phone" placeholder="e.g. 1234567890" required style="width:100%; padding:10px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px;">
+                    <input type="text" name="phone" placeholder="e.g. 1234567890" required class="input-field">
                 </div>
                 <div class="form-group">
                     <label style="font-weight:600; display:block; margin-bottom:5px;">Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required style="width:100%; padding:10px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px;">
+                    <input type="password" name="password" placeholder="••••••••" required class="input-field">
                 </div>
-                <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding:12px; border-radius:30px; background:#ff8c00; color:white; border:none; cursor:pointer; font-weight:bold;">
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding:12px; border-radius:30px; background:#ff8c00; color:white; border:none; cursor:pointer; font-weight:bold; font-size:1rem;">
                     Enter Dashboard
                 </button>
             </form>
