@@ -10,28 +10,8 @@
       "dest": "/api/style.css"
     },
     {
-      "src": "/login.php",
-      "dest": "/api/login.php"
-    },
-    {
-      "src": "/pooja-details.php",
-      "dest": "/api/pooja-details.php"
-    },
-    {
-      "src": "/guruji-dashboard.php",
-      "dest": "/api/guruji-dashboard.php"
-    },
-    {
-      "src": "/process-booking.php",
-      "dest": "/api/process-booking.php"
-    },
-    {
-      "src": "/logout.php",
-      "dest": "/api/logout.php"
-    },
-    {
-      "src": "/",
-      "dest": "/api/index.php"
+      "src": "/(.*)",
+      "dest": "/api/$1"
     }
   ]
 }

@@ -7,7 +7,7 @@ ini_set('display_errors', 0);
 include 'db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $phone = $conn->real_escape_string($_POST['phone']); // Security: Escape input
+    $phone = $conn->real_escape_string($_POST['phone']); 
     $password = $_POST['password'];
 
     // Check if user exists and is a Guruji
@@ -22,9 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['guruji_id'] = $user['user_id'];
             $_SESSION['guruji_name'] = $user['full_name'];
             
-            // On Vercel, use a relative path since they are in the same folder
             header("Location: guruji-dashboard.php");
-            exit(); // Always exit after a header redirect
+            exit();
         } else {
             $error = "Invalid Password!";
         }
@@ -39,34 +38,81 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guruji Login</title>
+    <title>Guruji Login | Pooja Seva</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific tweaks for the Login Layout */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            padding: 20px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .error-msg {
+            background: #fff5f5;
+            color: #c0392b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            border-left: 4px solid #c0392b;
+        }
+    </style>
 </head>
-<body style="background-color: #fffaf0;">
-    <div class="booking-form-box" style="max-width: 400px; margin: 100px auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-        <h2 style="color: #ff4500; text-align: center;">Guruji Login</h2>
-        
-        <?php if(isset($error)): ?>
-            <p style="color:red; text-align: center; font-weight: bold;"><?php echo $error; ?></p>
-        <?php endif; ?>
-        
-        <form method="POST">
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">Phone Number</label>
-                <input type="text" name="phone" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+<body>
+
+    <nav class="navbar">
+        <div class="logo">🕉️ Pooja Seva</div>
+        <ul class="nav-links">
+            <li><a href="index.php">Home</a></li>
+        </ul>
+    </nav>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🙏</div>
+            <h2 style="color: #ff8c00; margin-bottom: 5px;">Guruji Portal</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 30px;">Access your sacred assignments</p>
+            
+            <?php if(isset($error)): ?>
+                <div class="error-msg"><?php echo $error; ?></div>
+            <?php endif; ?>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" placeholder="Registered mobile no." required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+                    Enter Dashboard
+                </button>
+            </form>
+            
+            <div style="margin-top: 25px;">
+                <a href="index.php" style="color: #999; text-decoration: none; font-size: 0.85rem;">
+                    ← Back to Home
+                </a>
             </div>
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 5px;">Password</label>
-                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            </div>
-            <button type="submit" class="btn" style="width: 100%; background: #ff4500; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                Enter Dashboard
-            </button>
-        </form>
-        
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="index.php" style="color: #666; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
         </div>
     </div>
+
+    <footer style="text-align: center; color: #999; font-size: 0.8rem; margin-bottom: 20px;">
+        &copy; 2026 Digital Vedic Resource Platform
+    </footer>
+
 </body>
 </html>
