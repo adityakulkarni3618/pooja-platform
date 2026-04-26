@@ -1,26 +1,22 @@
 <?php
-// Database Configuration
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "pooja_platform";
-
-// Global flag to check database status
-$db_connected = false;
+// Filess.io Connection Details
+$host = "8gb2xk.h.filess.io";
+$user = "pooja_platform_db_meantskill";
+$pass = "9471475cf7ce2172cc4215d237b5e90200e2d0bf";
+$dbname = "pooja_platform_db_meantskill";
+$port = 3307; // Note: Your port is 3307, not the standard 3306
 
 try {
-    // Attempt connection
-    $conn = new mysqli($host, $user, $pass, $dbname);
+    $conn = new mysqli($host, $user, $pass, $dbname, $port);
     
     if ($conn->connect_error) {
-        $db_connected = false;
-    } else {
-        $db_connected = true;
-        // Set charset for Marathi support
-        $conn->set_charset("utf8mb4");
+        die("Connection failed: " . $conn->connect_error);
     }
+    
+    // Support for Marathi text
+    $conn->set_charset("utf8mb4");
+    
 } catch (Exception $e) {
-    // Silence the error for the live site
-    $db_connected = false;
+    echo "Cloud Database Error: " . $e->getMessage();
 }
 ?>
